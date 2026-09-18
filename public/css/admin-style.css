@@ -1,0 +1,62 @@
+:root {
+    --sidebar-width: 260px;
+    --primary-color: #dc3545;
+    --dark-bg: #1e293b;
+}
+body { background-color: #f1f5f9; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+/* Sidebar Styling */
+.sidebar {
+    width: var(--sidebar-width);
+    min-height: 100vh;
+    background-color: var(--dark-bg);
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+.sidebar .nav-link {
+    color: #94a3b8;
+    margin-bottom: 6px;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.sidebar .nav-link.active, .sidebar .nav-link:hover {
+    color: white;
+    background-color: var(--primary-color);
+}
+
+/* Main Content Layout */
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding: 24px;
+    transition: all 0.3s ease;
+}
+
+/* Card & UI Polish */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    margin-bottom: 1.5rem;
+}
+.tab-content-section { display: none; }
+.tab-content-section.active { display: block; }
+
+/* Responsive Breakpoints */
+@media (max-width: 991.98px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    .main-content {
+        margin-left: 0;
+        padding: 15px;
+    }
+}

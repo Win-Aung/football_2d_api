@@ -719,8 +719,8 @@
                                                 <input type="text" class="form-control" id="announceGoalTotal">
                                             </div>
                                             <div class="col-md-6">
-                                                <label for="announceVideoLink" class="form-label">Live Video Play Link (မထည့်လဲရ)</label>
-                                                <input type="text" class="form-control" id="announceVideoLink">
+                                                <label for="announceVideoLink" class="form-label">Live Video Play Link များ (မထည့်လဲရ၊ တစ်ကြောင်းလျှင် တစ်ခု (သို့) ကော်မာခံရန်)</label>
+                                                <textarea class="form-control" id="announceVideoLink" rows="2" placeholder="လင့်ခ်များကို အများကြီးထည့်ရန်..."></textarea>
                                             </div>
                                         </div>
 
@@ -881,8 +881,8 @@
                                             <input type="text" class="form-control" id="editGoalTotal">
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label">Live Video Play Link</label>
-                                            <input type="text" class="form-control" id="editVideoLink">
+                                            <label class="form-label">Live Video Play Link များ</label>
+                                            <textarea class="form-control" id="editVideoLink" rows="2"></textarea>
                                         </div>
                                     </div>
 

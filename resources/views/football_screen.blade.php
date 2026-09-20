@@ -166,8 +166,10 @@
 <div class="modal fade" id="liveVideoModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden bg-dark">
-            <div class="modal-header border-0 pb-0 text-white">
+            <div class="modal-header border-0 pb-0 text-white justify-content-between align-items-center">
                 <h5 class="modal-title fw-bold fs-6">🔴 Live Match Stream</h5>
+                <!-- Resolution Selection Buttons -->
+                <div id="resolution-buttons" class="d-flex gap-1 flex-wrap"></div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="stopLiveStream()"></button>
             </div>
             <div class="modal-body p-0 position-relative" style="min-height: 350px; background: #000;">
@@ -412,7 +414,7 @@
                                 <span class="fw-bold text-purple">${m.league_name || 'General League'}</span>
                             </div>
                             <div class="d-flex align-items-center gap-2">
-                                <button type="button" class="badge bg-danger text-white border-0 px-2 py-1 shadow-sm" style="font-size: 11px; cursor: pointer;" onclick="openLiveModal('${m.video_link}')">
+                                <button type="button" class="badge bg-danger text-white border-0 px-2 py-1 shadow-sm" style="font-size: 11px; cursor: pointer;" onclick="openLiveModal('${m.video_link ? m.video_link.replace(/'/g, "\\'") : ''}')">
                                     <i class="fas fa-play-circle me-1"></i> ဖွင့်ကြည့်ရန်
                                 </button>
                                 <span>ပွဲစဥ်: ${m.id}</span>
@@ -462,20 +464,80 @@
         }
     }
 
-    function openLiveModal(videoUrl) {
+    function openLiveModal(videoLinksStr) {
         let videoContainer = document.getElementById('video-container');
-        if (!videoContainer) return;
+        let resContainer = document.getElementById('resolution-buttons');
+        if (!videoContainer || !resContainer) return;
 
-        videoContainer.innerHTML = `
-            <iframe src="${videoUrl}" 
-                title="Live Stream" 
-                width="100%" 
-                height="100%" 
-                frameborder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen>
-            </iframe>
-        `;
+        videoContainer.innerHTML = '';
+        resContainer.innerHTML = '';
+
+        // လင့်ခ်များကို ကော်မာ (,) သို့မဟုတ် အတန်းအသစ် (Newline) ဖြင့် သေချာခွဲထုတ်ခြင်း
+        let links = String(videoLinksStr).split(/[\r\n,]+/).map(l => l.trim()).filter(l => l.length > 0);
+
+        if (links.length === 0) {
+            videoContainer.innerHTML = `<div class="text-white text-center p-4">ဗီဒီယိုလင့်ခ် မရှိပါ။</div>`;
+            return;
+        }
+
+        // လင့်ခ်တစ်ခုတည်းသာရှိလျှင် တိုက်ရိုက်ဖွင့်မည်
+        if (links.length === 1) {
+            videoContainer.innerHTML = `
+                <iframe src="${links[0]}" 
+                    title="Live Stream" 
+                    width="100%" 
+                    height="100%" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            `;
+        } else {
+            // လင့်ခ်များစွာရှိလျှင် ရွေးချယ်စရာ ခလုတ်များဖန်တီးပေးမည်
+            let qualities = ['480 (480p)', '720 (720p)', '1080 (1080p)', 'HQ', 'LQ'];
+            
+            links.forEach((link, index) => {
+                let qualityLabel = qualities[index] ? qualities[index] : `Quality ${index + 1}`;
+                let btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `btn btn-sm ${index === 0 ? 'btn-danger' : 'btn-outline-light'} fw-bold px-2 py-1`;
+                btn.style.fontSize = '11px';
+                btn.innerText = qualityLabel;
+                
+                btn.onclick = function() {
+                    resContainer.querySelectorAll('button').forEach(b => {
+                        b.classList.remove('btn-danger');
+                        b.classList.add('btn-outline-light');
+                    });
+                    btn.classList.remove('btn-outline-light');
+                    btn.classList.add('btn-danger');
+
+                    videoContainer.innerHTML = `
+                        <iframe src="${link}" 
+                            title="Live Stream" 
+                            width="100%" 
+                            height="100%" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
+                    `;
+                };
+                resContainer.appendChild(btn);
+            });
+
+            // ပထမဆုံးလင့်ခ်ကို အစောဆုံး ဖွင့်ပြပေးရန်
+            videoContainer.innerHTML = `
+                <iframe src="${links[0]}" 
+                    title="Live Stream" 
+                    width="100%" 
+                    height="100%" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            `;
+        }
 
         let modal = new bootstrap.Modal(document.getElementById('liveVideoModal'));
         modal.show();

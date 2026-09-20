@@ -85,6 +85,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/api/football/update-status', [FootballController::class, 'updateFootballStatus']); 
     Route::get('/football/status', [FootballController::class, 'getFootballStatus']);              
     Route::get('/api/football/status', [FootballController::class, 'getFootballStatus']);
+    Route::post('/football-matches/check-and-close', [FootballController::class, 'checkAndCloseMatchStatuses']);
     Route::post('/api/football-matches/check-and-close', [FootballController::class, 'checkAndCloseMatchStatuses']); 
     Route::post('/football/place-bet', [FootballController::class, 'placeFootballBet']); 
     Route::post('/api/football/place-bet', [FootballController::class, 'placeFootballBet']);          

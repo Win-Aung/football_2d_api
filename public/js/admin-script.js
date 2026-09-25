@@ -1182,9 +1182,11 @@ function toggleSelectAllPayments(master) {
     checkboxes.forEach(cb => cb.checked = master.checked);
 }
 
+
 // Delete Selected Payment Requests
 async function deleteSelectedPaymentRequests() {
     let selectedIds = Array.from(document.querySelectorAll('.payment-checkbox:checked')).map(cb => cb.value);
+    
     if (selectedIds.length === 0) {
         alert('ကျေးဇူးပြု၍ ဖျက်ရန် အနည်းဆုံး တစ်ခုကို ရွေးချယ်ပါ။');
         return;
@@ -1195,8 +1197,9 @@ async function deleteSelectedPaymentRequests() {
     }
 
     try {
+        let successCount = 0;
         for (let id of selectedIds) {
-            await fetch(`${window.baseUrl}/api/request/delete`, {
+            let res = await fetch(`${window.baseUrl}/api/request/delete`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1205,12 +1208,22 @@ async function deleteSelectedPaymentRequests() {
                 },
                 body: JSON.stringify({ request_id: id })
             });
+
+            let result = await res.json();
+            if (res.ok && result.status === 'success') {
+                successCount++;
+            }
         }
-        alert('ရွေးချယ်ထားသော အချက်အလက်များကို အောင်မြင်စွာ ဖျက်ပြီးပါပြီ။');
-        fetchPaymentRequestsTab();
+
+        if (successCount > 0) {
+            alert('ရွေးချယ်ထားသော အချက်အလက်များကို အောင်မြင်စွာ ဖျက်ပြီးပါပြီ။');
+            fetchPaymentRequestsTab(); // ဇယားကို ဒေတာအသစ်ဖြင့် ပြန်လည်ဆွဲရန်
+        } else {
+            alert('ဖျက်ရာတွင် အမှားအယွင်း ရှိပါသည်။');
+        }
     } catch (e) {
         console.error('Error deleting payment requests:', e);
-        alert('ဖျက်ရာတွင် အမှားအယွင်း ရှိပါသည်။');
+        alert('ဆာဗာချိတ်ဆက်မှု အဆင်မပြေပါ။');
     }
 }
 
@@ -1927,41 +1940,47 @@ function changeTwoDBetPage(page) {
     renderTwoDBetsTablePage(currentTwoDBetPage);
 }
 
-// Select All Checkbox အတွက်
+// Select All Checkbox for 2D Bets
 function toggleSelectAllTwoDBets(master) {
     let checkboxes = document.querySelectorAll('.twod-bet-checkbox');
     checkboxes.forEach(cb => cb.checked = master.checked);
 }
 
-// ရွေးချယ်ထားသော 2D Bet များကို အားလုံးဖျက်ရန် (Select All Delete)
+// ရွေးချယ်ထားသော 2D Bet များကို ဖျက်ရန် Function
 async function deleteSelectedTwoDBets() {
     let selectedIds = Array.from(document.querySelectorAll('.twod-bet-checkbox:checked')).map(cb => cb.value);
+    
     if (selectedIds.length === 0) {
-        alert('ကျေးဇူးပြု၍ ဖျက်ရန် Bet အနည်းဆုံး တစ်ခုကို ရွေးချယ်ပါ။');
+        alert('ကျေးဇူးပြု၍ ဖျက်ရန် 2D Bet အနည်းဆုံး တစ်ခုကို ရွေးချယ်ပါ။');
         return;
     }
 
-    if (!confirm(`ရွေးချယ်ထားသော Bet စာရင်း ${selectedIds.length} ခုကို ဖျက်ရန် သေချာပါသလား?`)) {
+    if (!confirm(`ရွေးချယ်ထားသော 2D Bet စာရင်း ${selectedIds.length} ခုကို ဖျက်ရန် သေချာပါသလား?`)) {
         return;
     }
 
     try {
-        for (let id of selectedIds) {
-            await fetch(`${window.baseUrl}/api/2d/bet/delete`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': 'Bearer ' + window.apiToken
-                },
-                body: JSON.stringify({ id: id })
-            });
+        let res = await fetch(`${window.baseUrl}/api/admin/2d-user-bets/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + window.apiToken
+            },
+            body: JSON.stringify({ ids: selectedIds })
+        });
+
+        let result = await res.json();
+
+        if (res.ok && (result.status === 'success' || result.success === true)) {
+            alert('ရွေးချယ်ထားသော 2D Bet များကို အောင်မြင်စွာ ဖျက်ပြီးပါပြီ။');
+            fetchTwoDBets(); // ဇယားကို ဒေတာအသစ်ဖြင့် ပြန်ဆွဲမည်
+        } else {
+            alert('ဖျက်ရာတွင် အမှားအယွင်း ရှိပါသည်။ (Error: ' + (result.message || '') + ')');
         }
-        alert('ရွေးချယ်ထားသော Bet များကို အောင်မြင်စွာ ဖျက်ပြီးပါပြီ။');
-        fetchTwoDBets();
     } catch (e) {
         console.error('Error deleting 2D bets:', e);
-        alert('ဖျက်ရာတွင် အမှားအယွင်း ရှိပါသည်။');
+        alert('ဆာဗာချိတ်ဆက်မှု အဆင်မပြေပါ။');
     }
 }
 
@@ -2239,7 +2258,11 @@ function switchTab(tabId, event) {
         'home': 'Dashboard Home',
         'users': 'Users Management',
         'twodbets': '2D User Bets',
-        'football': 'ဘောပွဲ စီမံခန့်ခွဲမှု'
+        'animalbet': 'AnimalBet စာရင်းများ',
+        'football': 'ဘောပွဲ စီမံခန့်ခွဲမှု',
+        'livestream': 'Live Stream စီမံခန့်ခွဲမှု',
+        'image-slider': 'Image Slider စီမံခန့်ခွဲမှု'
+        
     };
     document.getElementById('current-tab-title').innerText = titles[tabId] || 'Dashboard';
 }
@@ -2475,4 +2498,3 @@ function sendAdminMessage(event) {
         alert('ဆာဗာချိတ်ဆက်မှု အဆင်မပြေပါ။');
     });
 }
-

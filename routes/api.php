@@ -20,7 +20,9 @@ use App\Http\Controllers\ChatController;
     Route::get('/twod-result-live', [TwoDController::class, 'getLiveResult']);
     Route::get('/api/twod-result-live', [TwoDController::class, 'getLiveResult']);
     
+    
 Route::middleware(['auth:sanctum'])->group(function () {
+
 
     // Dashboard & Special Feature Routes
     Route::get('/admin/dashboard', [AdminController::class, 'getDashboardData']);  
@@ -38,7 +40,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user/requests', [RequestController::class, 'getUserRequests']);           
     Route::post('/submit-request', [RequestController::class, 'submitRequest']);           
     Route::post('/request/approve', [RequestController::class, 'approveRequest']);         
-    Route::post('/request/reject', [RequestController::class, 'rejectRequest']);           
+    Route::post('/request/reject', [RequestController::class, 'rejectRequest']); 
+    Route::delete('/request/delete', [RequestController::class, 'deleteRequest']);
+    Route::delete('/api/request/delete', [RequestController::class, 'deleteRequest']);          
 
     // General Bet Routes
     Route::post('/bet/place', [BetController::class, 'placeBet']);                 
@@ -55,6 +59,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/api/trigger-lucky-draw', [BetController::class, 'triggerLuckyDraw']);
     Route::get('/trigger-lucky-draw', [BetController::class, 'triggerLuckyDraw']);
     Route::get('/animal/history', [BetController::class, 'getAnimalHistory']);
+    Route::get('/api/animal/history', [BetController::class, 'getAdminAnimalHistory']);
+    Route::get('/animal/history', [BetController::class, 'getAdminAnimalHistory']);
+    Route::get('/api/animal/history', [BetController::class, 'getAdminAnimalHistory']);
+
+    Route::post('/animal/history/delete', [BetController::class, 'deleteAnimalHistory']);
+    Route::post('/api/animal/history/delete', [BetController::class, 'deleteAnimalHistory']);
 
     // Football Betting Routes
     Route::post('/football/add-league', [FootballController::class, 'addLeague']);
@@ -115,9 +125,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/api/twod/declare-result', [TwoDController::class, 'declareTwoDResult']);
     Route::post('/twod/session-settings/update', [TwoDController::class, 'updateSessionSettings']); 
     Route::post('/api/admin/2d-session-settings', [TwoDController::class, 'updateSessionSettings']);
+    Route::delete('/admin/2d-user-bets/delete', [TwoDController::class, 'deleteAdminTwoDBet']);
+    Route::delete('/api/admin/2d-user-bets/delete', [TwoDController::class, 'deleteAdminTwoDBet']);
     Route::get('/api/twod/session-statuses', [ConfigController::class, 'getSessionStatus']);
     Route::get('/twod/session-statuses', [ConfigController::class, 'getSessionStatus']);
     Route::post('/twod/session-statuses', [ConfigController::class, 'updateSessionStatus']); 
+    
 
     // Configurations & Status Routes (Error ဖြစ်နေသော နေရာအတွက် လမ်းကြောင်းများ အစုံအလင်ထည့်သွင်းထားသည်)
     Route::get('/config/session-status', [ConfigController::class, 'getSessionStatus']);     
@@ -141,6 +154,27 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/api/admin/chat/messages/{userId}', [AdminController::class, 'getChatMessages']); 
 
     Route::get('/api/admin/chats', [AdminController::class, 'getChatUsers']);
-});
 
+  
+
+   // Admin Live Stream Routes
+    Route::post('/admin/livestream/store', [FootballController::class, 'addLiveStream']);
+    Route::get('/admin/livestream/list', [FootballController::class, 'getLiveStreams']);
+    Route::get('/api/admin/livestream/list', [FootballController::class, 'getLiveStreams']);
     
+    Route::post('/admin/livestream/update/{id}', [FootballController::class, 'updateLiveStream']);
+    Route::post('/api/admin/livestream/update/{id}', [FootballController::class, 'updateLiveStream']);
+    
+    Route::post('/admin/livestream/update-status/{id}', [FootballController::class, 'updateLiveStreamStatus']);
+    Route::post('/api/admin/livestream/update-status/{id}', [FootballController::class, 'updateLiveStreamStatus']);
+
+    Route::post('/admin/slider/store', [AdminController::class, 'storeSlider']);
+    Route::post('/api/admin/slider/store', [AdminController::class, 'storeSlider']);
+    Route::post('/admin/slider/update/{id}', [AdminController::class, 'updateSlider']);
+    Route::post('/api/admin/slider/update/{id}', [AdminController::class, 'updateSlider']);
+    Route::delete('/admin/slider/delete/{id}', [AdminController::class, 'deleteSlider']);
+    Route::delete('/api/admin/slider/delete/{id}', [AdminController::class, 'deleteSlider']);
+    Route::post('/admin/slider/update-status/{id}', [AdminController::class, 'updateSliderStatus']);
+    Route::post('/api/admin/slider/update-status/{id}', [AdminController::class, 'updateSliderStatus']);
+
+});

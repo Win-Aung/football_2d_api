@@ -385,5 +385,48 @@ class TwoDController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * 2D User Bet များကို Admin မှ ဖျက်ရန် Method
+     */
+    public function deleteAdminTwoDBet(Request $request)
+    {
+        try {
+            // Single ID သို့မဟုတ် Array ဖြင့် ပို့လာသည်များကို လက်ခံရန်
+            $betId = $request->input('id') ?? $request->input('bet_id');
+            $ids = $request->input('ids', []);
+
+            if (!empty($betId)) {
+                $ids = array_merge($ids, [$betId]);
+            }
+
+            if (empty($ids)) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "ဖျက်ရန် 2D Bet ID များ မပါရှိပါ။"
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
+            // တည်ရှိနေသော bet များကို ဖျက်ခြင်း
+            TwoDBet::whereIn('id', $ids)->delete();
+
+            DB::commit();
+
+            return response()->json([
+                "status" => "success",
+                "success" => true,
+                "message" => "2D Bet များကို အောင်မြင်စွာ ဖျက်ပြီးပါပြီ။"
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                "status" => "error",
+                "message" => "Error: " . $e->getMessage()
+            ], 500);
+        }
+    }
    
 }

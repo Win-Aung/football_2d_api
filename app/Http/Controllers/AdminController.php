@@ -185,4 +185,146 @@ class AdminController extends Controller
 
         return response()->json(['status' => 'success', 'chat' => $chat]);
     }
+
+    // Slider နှင့် ပုံများကို သိမ်းဆည်းရန်
+    public function storeSlider(Request $request)
+    {
+        try {
+            $request->validate([
+                'title' => 'nullable|string|max:255',
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'description' => 'nullable|string',
+            ]);
+
+            $imagePath = null;
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('uploads/sliders'), $filename);
+                $imagePath = 'uploads/sliders/' . $filename;
+            }
+
+            \DB::table('sliders')->insert([
+                'title' => $request->title,
+                'image' => $imagePath,
+                'description' => $request->description,
+                'status' => 1, // 🟢 ပုံအသစ်ထည့်လျှင် Active (1) အဖြစ် စတင်မည်
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Slider / ပုံကို အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+    // Slider ကို ပြင်ဆင်ရန် (Update)
+    public function updateSlider(Request $request, $id)
+    {
+        try {
+            $slider = \DB::table('sliders')->where('id', $id)->first();
+            if (!$slider) {
+                return response()->json(['status' => 'error', 'message' => 'Slider မတွေ့ရှိပါ။'], 404);
+            }
+
+            $request->validate([
+                'title' => 'nullable|string|max:255',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'description' => 'nullable|string',
+            ]);
+
+            // 🟢 ပုံအသစ် တင်လာခြင်း ရှိမရှိ စစ်ဆေးပြီး မပါလာလျှင် မူလပုံဟောင်းကို ဆက်လက်ထိန်းသိမ်းမည်
+            $imagePath = $slider->image;
+            if ($request->hasFile('image')) {
+                // ပုံဟောင်း ရှိလျှင် public folder ထဲမှ ဖျက်ပစ်ရန်
+                if ($slider->image && file_exists(public_path($slider->image))) {
+                    unlink(public_path($slider->image));
+                }
+
+                $file = $request->file('image');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('uploads/sliders'), $filename);
+                $imagePath = 'uploads/sliders/' . $filename;
+            }
+
+            \DB::table('sliders')->where('id', $id)->update([
+                'title' => $request->title,
+                'image' => $imagePath, // ပုံအသစ်မပါလျှင် မူလပုံဟောင်းအတိုင်း ဆက်ရှိနေမည်
+                'description' => $request->description,
+                'updated_at' => now(),
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Slider ကို အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ။'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Slider ၏ Active / Inactive အခြေအနေကို ပြောင်းလဲရန်
+    public function updateSliderStatus(Request $request, $id)
+    {
+        try {
+            $slider = \DB::table('sliders')->where('id', $id)->first();
+            if (!$slider) {
+                return response()->json(['status' => 'error', 'message' => 'Slider မတွေ့ရှိပါ။'], 404);
+            }
+
+            $newStatus = $request->status; // 1 (Active) သို့မဟုတ် 0 (Inactive)
+
+            \DB::table('sliders')->where('id', $id)->update([
+                'status' => $newStatus,
+                'updated_at' => now(),
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Slider အခြေအနေကို အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ။'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Slider ကို ဖျက်ရန် (Delete)
+    public function deleteSlider($id)
+    {
+        try {
+            $slider = \DB::table('sliders')->where('id', $id)->first();
+            if (!$slider) {
+                return response()->json(['status' => 'error', 'message' => 'Slider မတွေ့ရှိပါ။'], 404);
+            }
+
+            // ပုံဖိုင်ပါ ရှိလျှင် public folder ထဲမှ ဖျက်ပစ်ရန်
+            if ($slider->image && file_exists(public_path($slider->image))) {
+                unlink(public_path($slider->image));
+            }
+
+            \DB::table('sliders')->where('id', $id)->delete();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Slider ကို အောင်မြင်စွာ ဖျက်ပြီးပါပြီ။'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

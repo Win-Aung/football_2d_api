@@ -554,5 +554,123 @@ public function deleteMatch(Request $request) {
         }
     }
 
-    
+    ////live Stream ///
+
+    public function addLiveStream(Request $request)
+    {
+        try {
+            $streamUrl = trim($request->input('stream_url', ''));
+            $hLogo = trim($request->input('h_logo', ''));
+            $wLogo = trim($request->input('w_logo', ''));
+            $description = trim($request->input('description', ''));
+            $status = $request->input('status', 1);
+
+            if (empty($streamUrl)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Stream URL ထည့်သွင်းရန် လိုအပ်ပါသည်။'
+                ], 422);
+            }
+
+            DB::table('live_streams')->insert([
+                'stream_url' => $streamUrl,
+                'h_logo' => !empty($hLogo) ? $hLogo : null,
+                'w_logo' => !empty($wLogo) ? $wLogo : null,
+                'description' => $description,
+                'status' => $status,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Live Stream အချက်အလက်များ သိမ်းဆည်းပြီးပါပြီ။'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getLiveStreams()
+    {
+        try {
+            $streams = DB::table('live_streams')->orderBy('id', 'DESC')->get();
+            return response()->json([
+                'status' => 'success',
+                'data' => $streams
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // 🟢 အချက်အလက်များ အသစ်ပြင်ဆင်ရန် (Update)
+    public function updateLiveStream(Request $request, $id)
+    {
+        try {
+            $streamUrl = trim($request->input('stream_url', ''));
+            $hLogo = trim($request->input('h_logo', ''));
+            $wLogo = trim($request->input('w_logo', ''));
+            $description = trim($request->input('description', ''));
+            $status = $request->input('status', 1);
+
+            if (empty($streamUrl)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Stream URL ထည့်သွင်းရန် လိုအပ်ပါသည်။'
+                ], 422);
+            }
+
+            DB::table('live_streams')->where('id', $id)->update([
+                'stream_url' => $streamUrl,
+                'h_logo' => !empty($hLogo) ? $hLogo : null,
+                'w_logo' => !empty($wLogo) ? $wLogo : null,
+                'description' => $description,
+                'status' => $status,
+                'updated_at' => now(),
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'အချက်အလက်များ အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ။'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // 🟢 Switch ခလုတ်ဖြင့် Status သီးသန့်ပြောင်းရန်
+    public function updateLiveStreamStatus(Request $request, $id)
+    {
+        try {
+            $status = $request->input('status', 0);
+
+            DB::table('live_streams')->where('id', $id)->update([
+                'status' => $status,
+                'updated_at' => now(),
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Status အောင်မြင်စွာ ပြောင်းလဲပြီးပါပြီ။'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
+

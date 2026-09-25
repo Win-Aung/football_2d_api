@@ -131,6 +131,7 @@
 
 <!-- JavaScript Logic -->
 <script>
+    
     const baseUrl = "http://127.0.0.1:8000/api";
     const token = localStorage.getItem('auth_token');
 
@@ -959,6 +960,7 @@ function handleLogout() {
         csrfToken: "{{ csrf_token() }}"
     };
 </script>
+
 <script src="{{ asset('js/twod-script.js') }}"></script>
 
 </body>

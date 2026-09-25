@@ -56,6 +56,8 @@ class BetController extends Controller
             ]);
 
             $betsJsonString = json_encode($bets, JSON_UNESCAPED_UNICODE);
+
+            date_default_timezone_set('Asia/Yangon');
             
             DB::table('game_bets')->insert([
                 'userid' => $userId,
@@ -65,7 +67,7 @@ class BetController extends Controller
                 'status' => 'pending',
                 'winAmount' => 0.00,
                 'luckyAnimal' => '',
-                'time' => now()
+                'time' => date('Y-m-d H:i:s'),
             ]);
 
             DB::commit();
@@ -563,4 +565,103 @@ class BetController extends Controller
             ], 500, [], JSON_UNESCAPED_UNICODE);
         }
     }
+
+    public function getAdminAnimalHistory(Request $request)
+    {
+        try {
+            // ဒေတာဝင်ရောက်မှုကို စစ်ဆေးရန် Laravel Log တွင် မှတ်တမ်းတင်မည်
+            \Illuminate\Support\Facades\Log::info('getAdminAnimalHistory called successfully.', [
+                'query_params' => $request->all(),
+                'user' => $request->user() ? $request->user()->id : 'Unauthenticated'
+            ]);
+
+            $query = DB::table('game_bets');
+
+            if ($request->has('status') && !empty($request->input('status'))) {
+                $query->where('status', $request->input('status'));
+            }
+
+            if ($request->has('date') && !empty($request->input('date'))) {
+                $query->whereDate('time', $request->input('date'));
+            }
+
+            $rows = $query->orderBy('id', 'desc')->get();
+
+            \Illuminate\Support\Facades\Log::info('Fetched game_bets rows count: ' . $rows->count());
+
+            $bets = [];
+
+            foreach ($rows as $row) {
+                $decodedBets = [];
+                if (!empty($row->bets_json)) {
+                    $decoded = json_decode($row->bets_json, true);
+                    if (is_array($decoded)) {
+                        $decodedBets = $decoded;
+                    }
+                }
+                
+                $bets[] = [
+                    "id" => intval($row->id ?? 0),
+                    "userId" => intval($row->userid ?? 0), 
+                    "userName" => $row->userName ?? '',
+                    "bets_json" => $decodedBets,
+                    "total_amount" => floatval($row->total_amount ?? 0),
+                    "status" => $row->status ?? 'pending',
+                    "winAmount" => floatval($row->winAmount ?? 0),
+                    "luckyAnimal" => trim($row->luckyAnimal ?? ''),
+                    "time" => $row->time ?? ''
+                ];
+            }
+
+            return response()->json([
+                "status" => "success", 
+                "data" => $bets
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error in getAdminAnimalHistory: ' . $e->getMessage());
+            return response()->json([
+                "status" => "error", 
+                "message" => "Database error: " . $e->getMessage()
+            ], 500, [], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    /**
+     * Animal Bet မှတ်တမ်းများကို ဖျက်ရန် Method
+     */
+    public function deleteAnimalHistory(Request $request)
+    {
+        try {
+            $ids = $request->input('ids', []);
+
+            if (empty($ids) || !is_array($ids)) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "ဖျက်ရန် ID များ မပါရှိပါ။"
+                ], 400, [], JSON_UNESCAPED_UNICODE);
+            }
+
+            DB::beginTransaction();
+
+            // game_bets ဇယားမှ သက်ဆိုင်ရာ ID များကို ဖျက်ခြင်း
+            DB::table('game_bets')->whereIn('id', $ids)->delete();
+
+            DB::commit();
+
+            return response()->json([
+                "status" => "success",
+                "success" => true,
+                "message" => "အောင်မြင်စွာ ဖျက်ပြီးပါပြီ။"
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                "status" => "error",
+                "message" => "Error: " . $e->getMessage()
+            ], 500, [], JSON_UNESCAPED_UNICODE);
+        }
+    }
+    
 }

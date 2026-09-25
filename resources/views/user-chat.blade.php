@@ -46,12 +46,14 @@
 </div>
 
 <script>
+    const baseUrl = "{{ url('/api') }}";
     const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
     const chatBox = document.getElementById('chat-box');
 
     async function loadMessages() {
+        if (!chatBox) return;
         try {
-            let response = await fetch('/api/chat/messages', {
+            let response = await fetch(`${baseUrl}/chat/messages`, {
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + token,

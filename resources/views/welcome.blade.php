@@ -1,961 +1,458 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="my" class="scroll-smooth dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Professional Dashboard</title>
-    <!-- Bootstrap 5.3 CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome 6 Icons -->
+    <title>My Sport MM</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom Admin CSS -->
-    <link rel="stylesheet" href="{{ asset('css/admin-style.css?v=' . time()) }}">
-
+    <!-- HLS.js for m3u8 streaming support -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Padauk:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body.dark-mode {
-            background-color: #121212 !important;
-            color: #e0e0e0 !important;
+        body {
+            font-family: 'Inter', 'Padauk', sans-serif;
         }
-        body.dark-mode .navbar, 
-        body.dark-mode .card, 
-        body.dark-mode .modal-content {
-            background-color: #1e1e1e !important;
-            color: #e0e0e0 !important;
-            border-color: #333 !important;
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        body.dark-mode .table {
-            color: #e0e0e0 !important;
-        }
-        body.dark-mode .table-light {
-            background-color: #2a2a2a !important;
-            color: #e0e0e0 !important;
+        .glow-effect {
+            box-shadow: 0 0 40px -10px rgba(16, 185, 129, 0.3);
         }
     </style>
-
-    <!-- 🟢 မှန်ကန်သော Token Key (auth_token) ကို ထည့်သွင်းခြင်း -->
-    <script>
-        window.Laravel = { 
-            baseUrl: "{{ url('/') }}",
-            token: "{{ session('auth_token') }}" 
-        };
-    </script>
-    <audio id="notificationSound" src="{{ url('/') }}/paymentrequest.mp3" preload="auto"></audio>
 </head>
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-slate-950">
 
-<body>
+    <!-- Navigation Bar -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass-card border-b border-slate-800/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <a href="#" class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>MY SPORT<span class="text-emerald-400">.</span></span>
+            </a>
+            
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                <a href="#about" class="hover:text-emerald-400 transition-colors">ကိုယ်ရေးအကျဉ်း</a>
+                <a href="#skills" class="hover:text-emerald-400 transition-colors">ကျွမ်းကျင်မှုများ</a>
+                <a href="#projects" class="hover:text-emerald-400 transition-colors">လက်ရာများ</a>
+                <a href="#services" class="hover:text-emerald-400 transition-colors">ဝန်ဆောင်မှုများ</a>
+                <a href="#contact" class="hover:text-emerald-400 transition-colors">ဆက်သွယ်ရန်</a>
+            </nav>
 
-    <!-- Payment Settings Modal -->
-    <div class="modal fade" id="paymentSettingsModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">ငွေပေးချေမှု အချက်အလက်များ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="paymentSettingsForm">
-                        <div class="mb-3 text-center">
-                            <img id="previewQr" src="" alt="QR Code" class="img-fluid mb-2" style="max-height: 200px; display: none;">
-                            <input type="text" class="form-control" id="qrUrlInput" name="qrUrl" placeholder="QR Image URL ထည့်ရန်">
+            <div class="hidden md:flex items-center gap-4">
+                <a href="#contact" class="px-5 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold text-sm transition-all shadow-lg shadow-emerald-500/20">
+                    စကားပြောမည်
+                </a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="menu-btn" class="md:hidden text-slate-300 hover:text-white focus:outline-none p-2">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden glass-card border-t border-slate-800 px-6 py-6 space-y-4">
+            <a href="#about" class="block text-slate-300 hover:text-emerald-400 font-medium">ကိုယ်ရေးအကျဉ်း</a>
+            <a href="#skills" class="block text-slate-300 hover:text-emerald-400 font-medium">ကျွမ်းကျင်မှုများ</a>
+            <a href="#projects" class="block text-slate-300 hover:text-emerald-400 font-medium">လက်ရာများ</a>
+            <a href="#services" class="block text-slate-300 hover:text-emerald-400 font-medium">ဝန်ဆောင်မှုများ</a>
+            <a href="#contact" class="block text-slate-300 hover:text-emerald-400 font-medium">ဆက်သွယ်ရန်</a>
+            <div class="pt-2">
+                <a href="#contact" class="w-full text-center block px-5 py-3 rounded-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold text-sm">
+                    စကားပြောမည်
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Bar အောက်ရှိ Image Slider Section -->
+    <div class="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        @php
+            $activeSliders = \DB::table('sliders')->where('status', 1)->orderBy('id', 'desc')->get();
+        @endphp
+
+        @if($activeSliders->count() > 0)
+            <div class="relative w-full overflow-hidden rounded-2xl shadow-2xl border border-slate-800 glass-card my-6">
+                <div id="slider-container" class="relative h-64 sm:h-96 w-full overflow-hidden">
+                    @foreach($activeSliders as $index => $slider)
+                        <div class="slider-item absolute inset-0 transition-opacity duration-700 ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}" data-index="{{ $index }}">
+                            <img src="{{ url($slider->image) }}" alt="{{ $slider->title }}" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex flex-col justify-end p-6 sm:p-8">
+                                @if($slider->title)
+                                    <h3 class="text-xl sm:text-2xl font-bold text-white mb-2">{{ $slider->title }}</h3>
+                                @endif
+                                @if($slider->description)
+                                    <p class="text-slate-300 text-sm sm:text-base max-w-xl">{{ $slider->description }}</p>
+                                @endif
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="phoneInput" class="form-label">လက်ခံမည့် ဖုန်းနံပါတ်</label>
-                            <input type="text" class="form-control" id="phoneInput" name="phone" placeholder="ဥပမာ - 09xxxxxxxxx">
+                    @endforeach
+                </div>
+
+                @if($activeSliders->count() > 1)
+                    <button onclick="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-slate-950/60 hover:bg-emerald-500 text-white hover:text-slate-950 flex items-center justify-center transition-all border border-slate-700">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button onclick="nextSlide()" class="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-slate-950/60 hover:bg-emerald-500 text-white hover:text-slate-950 flex items-center justify-center transition-all border border-slate-700">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                @endif
+            </div>
+        @endif
+    </div>
+
+    <!-- Live Streams Card View Section -->
+    <section id="projects" class="py-12 relative bg-slate-900/50 border-t border-slate-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-4">
+                    Live Streams (တိုက်ရိုက်ထုတ်လွှင့်မှုများ)
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">လက်ရှိ တိုက်ရိုက်ထုတ်လွှင့်မည့် ပွဲစဉ်များ</h2>
+            </div>
+
+            @php
+                $liveStreams = \DB::table('live_streams')->where('status', 1)->orderBy('id', 'DESC')->get();
+            @endphp
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @forelse($liveStreams as $stream)
+                    @php
+                        $rawDescription = trim($stream->description ?? '');
+                        $allLinks = [];
+                        
+                        if (!empty($rawDescription)) {
+                            $parts = preg_split('/[\s,]+/', $rawDescription);
+                            foreach ($parts as $part) {
+                                $part = trim($part);
+                                if (filter_var($part, FILTER_VALIDATE_URL)) {
+                                    $allLinks[] = $part;
+                                }
+                            }
+                        }
+
+                        if (empty($allLinks)) {
+                            preg_match_all('/https?:\/\/[^\s,]+/', $rawDescription, $matchesAlt);
+                            $allLinks = $matchesAlt[0] ?? [];
+                        }
+
+                        $allLinks = array_values(array_unique($allLinks));
+                        $linksJson = json_encode($allLinks);
+
+                        // 🟢 stream_url မှ ပွဲစဉ်အမည်၊ ရက်စွဲနှင့် အချိန်ကို တိကျစွာ ခွဲထုတ်ခြင်း
+                        $formattedDate = '';
+                        $formattedTime = '';
+                        $displayTitle = 'Live Stream #' . $stream->id;
+
+                        if (!empty($stream->stream_url)) {
+                            if (preg_match('/-luc-(\d{2})(\d{2})-ngay-(\d{2}-\d{2}-\d{4})/', $stream->stream_url, $matchesUrl)) {
+                                $formattedTime = $matchesUrl[1] . ':' . $matchesUrl[2];
+                                $formattedDate = $matchesUrl[3];
+                            }
+
+                            $pathSegments = explode('/', trim($stream->stream_url, '/'));
+                            $slug = end($pathSegments);
+                            
+                            $slugClean = preg_replace('/-luc-\d{4}-ngay-\d{2}-\d{2}-\d{4}.*/', '', $slug);
+                            $slugClean = str_replace('-', ' ', $slugClean);
+                            
+                            if (!empty($slugClean) && !is_numeric($slugClean)) {
+                                $displayTitle = strtoupper($slugClean);
+                            }
+                        }
+                    @endphp
+
+                    <div data-links="{{ $linksJson }}" data-title="{{ $displayTitle }}" onclick="handleCardClick(this)" class="glass-card rounded-2xl overflow-hidden border border-slate-800 group hover:border-emerald-500/50 transition-all cursor-pointer">
+                        <div class="relative overflow-hidden aspect-video bg-slate-950 flex items-center justify-center p-4">
+                            <div class="flex items-center justify-center gap-6 w-full">
+                                @if(!empty($stream->h_logo))
+                                    <img src="{{ $stream->h_logo }}" alt="Home Logo" class="w-16 h-16 object-contain">
+                                @else
+                                    <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold">H</div>
+                                @endif
+
+                                <span class="text-xl font-bold text-emerald-400">VS</span>
+
+                                @if(!empty($stream->w_logo))
+                                    <img src="{{ $stream->w_logo }}" alt="Away Logo" class="w-16 h-16 object-contain">
+                                @else
+                                    <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold">A</div>
+                                @endif
+                            </div>
+
+                            <div class="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span class="px-4 py-2 rounded-full bg-emerald-500 text-slate-950 font-semibold text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-play"></i> အရည်အသွေးရွေးမည်
+                                </span>
+                            </div>
                         </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ပိတ်မည်</button>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="savePaymentSettings()">သိမ်းမည်</button>
-                </div>
+
+                        <div class="p-6">
+                            <!-- 🟢 လိုဂိုအောက်တွင် ပွဲစဉ်အမည် (IRAQ VS OMAN) နှင့် ရက်စွဲ၊ အချိန်ကို စနစ်တကျ ပြသခြင်း -->
+                            <div class="flex flex-col mb-3 space-y-2">
+                                <h3 class="text-lg font-bold text-white tracking-wide">{{ $displayTitle }}</h3>
+                                
+                                @if(!empty($formattedDate))
+                                    <div class="flex items-center gap-4 text-xs font-medium">
+                                        <div class="text-blue-400">
+                                            <i class="fa-regular fa-calendar-days me-1"></i>{{ $formattedDate }}
+                                        </div>
+                                        @if(!empty($formattedTime))
+                                            <div class="text-red-400">
+                                                <i class="fa-regular fa-clock me-1"></i>{{ $formattedTime }} နာရီ
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+
+                            @php
+                                $cleanDesc = trim(str_replace($allLinks, '', $rawDescription));
+                                $cleanDesc = trim(str_replace(',', '', $cleanDesc));
+                            @endphp
+                            <p class="text-slate-400 text-sm">{{ $cleanDesc !== '' ? $cleanDesc : 'စိတ်တိုင်းကျ ရွေးချယ်ကြည့်ရှုနိုင်ပါသည်။' }}</p>
+                        </div>
+                    </div>
+                @empty
+                    <div class="col-span-3 text-center py-12 text-slate-500">
+                        လက်တလော တိုက်ရိုက်ထုတ်လွှင့်မှုများ မရှိသေးပါ။
+                    </div>
+                @endforelse
+            </div>
+        </div>
+    </section>
+
+    <!-- Quality Selection & Video Popup Player Modal -->
+    <div id="video-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/90 backdrop-blur-md p-4">
+        <div class="glass-card max-w-4xl w-full rounded-2xl border border-slate-800 overflow-hidden shadow-2xl relative">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+                <h3 id="modal-title" class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-video text-emerald-400"></i> Live Stream Player
+                </h3>
+                <button onclick="closeStreamModal()" class="w-9 h-9 rounded-full bg-slate-900 hover:bg-red-500/20 text-slate-400 hover:text-red-400 flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div id="quality-buttons-container" class="flex flex-wrap items-center gap-2 px-6 py-3 bg-slate-900/80 border-b border-slate-800">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-2">အရည်အသွေး ရွေးချယ်ရန်:</span>
+            </div>
+
+            <div class="relative aspect-video bg-black flex items-center justify-center">
+                <video id="video-player" controls autoplay class="w-full h-full object-contain"></video>
             </div>
         </div>
     </div>
 
-    <!-- Sidebar Navigation -->
-    <nav class="sidebar p-3 d-flex flex-column justify-content-between" id="appSidebar">
-        <div>
-            <div class="d-flex align-items-center justify-content-between mb-4 px-2">
-                <h4 class="text-white m-0 fs-5"><i class="fa-solid fa-gauge me-2 text-danger"></i> Admin Panel</h4>
-                <button class="btn btn-sm text-white d-lg-none" onclick="toggleSidebar()"><i class="fa-solid fa-xmark fs-5"></i></button>
-            </div>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link active" href="#" onclick="switchTab('home', event)"><i class="fa-solid fa-home me-2"></i> Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="switchTab('users', event)"><i class="fa-solid fa-users me-2"></i> Users</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" data-section="2d-user-bets" onclick="switchTab('twodbets', event)"><i class="fa-solid fa-dice me-2"></i> 2D User Bets</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="switchTab('football', event)"><i class="fa-solid fa-futbol me-2"></i> ဘောပွဲ</a>
-                </li>
-            </ul>
-        </div>
-        <div class="pt-3 border-top border-secondary">
-            <button class="btn btn-outline-light w-100 btn-sm py-2" onclick="logout()"><i class="fa-solid fa-right-from-bracket me-2"></i> Logout</button>
-        </div>
-    </nav>
 
-    <!-- Main Content Area -->
-    <div class="main-content">
-        <!-- Top Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 px-4 py-3 rounded-3">
-            <div class="container-fluid px-0">
-                <div class="d-flex align-items-center">
-                    <button class="btn btn-light me-3 d-lg-none" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
-                    <span class="navbar-brand mb-0 h1 fs-5 fw-bold text-dark" id="current-tab-title">Dashboard Home</span>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-outline-secondary btn-sm px-3" onclick="toggleDarkMode()"><i class="fa-solid fa-moon me-1" id="darkModeIcon"></i> Dark</button>
-                    <button class="btn btn-outline-secondary btn-sm px-3" onclick="openTimerSettings()"><i class="fa-solid fa-clock me-1"></i> Timer</button>
-                    <button class="btn btn-outline-secondary btn-sm px-3" onclick="openPaymentSettings()"><i class="fa-solid fa-qrcode me-1"></i> Payment</button>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Timer Settings Modal -->
-        <div class="modal fade" id="timerSettingsModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                    <div class="modal-header text-white px-4 py-3" style="background-color: #6f42c1;">
-                        <h5 class="modal-title fw-bold fs-5 d-flex align-items-center">
-                            <i class="fa-solid fa-clock text-warning me-2 fs-4"></i> အချိန် (Timer) သတ်မှတ်ရန်
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4 bg-light">
-                        <form id="timerSettingsForm">
-                            <!-- Duration (Hours, Minutes, Seconds) Clock Timepicker Style -->
-                            <div class="mb-4 text-center bg-white p-3 rounded-3 shadow-sm border">
-                                <label class="form-label fw-bold text-secondary mb-2 d-flex align-items-center justify-content-center gap-1">
-                                    <i class="fa-solid fa-stopwatch text-purple"></i> Duration (နာရီ၊ မိနစ်၊ စက္ကန့်)
-                                </label>
-                                <div class="d-flex justify-content-center align-items-center gap-1">
-                                    <div class="input-group shadow-sm rounded" style="max-width: 280px; border: 1px solid #dcd6f7;">
-                                        <span class="input-group-text bg-white text-purple border-0 px-2 fs-5">
-                                            <i class="fa-regular fa-clock"></i>
-                                        </span>
-                                        <!-- နာရီ (Hours) -->
-                                        <input type="number" class="form-control text-center fw-bold fs-5 border-0 p-1" id="durationHours" placeholder="00" min="0" style="color: #6f42c1; background-color: #f8f4ff;" title="နာရီ">
-                                        <span class="input-group-text bg-transparent border-0 px-0 text-muted">:</span>
-                                        <!-- မိနစ် (Minutes) -->
-                                        <input type="number" class="form-control text-center fw-bold fs-5 border-0 p-1" id="durationMinutes" placeholder="05" min="0" max="59" style="color: #6f42c1; background-color: #f8f4ff;" title="မိနစ်">
-                                        <span class="input-group-text bg-transparent border-0 px-0 text-muted">:</span>
-                                        <!-- စက္ကန့် (Seconds) -->
-                                        <input type="number" class="form-control text-center fw-bold fs-5 border-0 p-1" id="durationSeconds" placeholder="00" min="0" max="59" style="color: #6f42c1; background-color: #f8f4ff;" title="စက္ကန့်">
-                                    </div>
-                                </div>
-                                <small class="text-muted mt-2 d-block" style="font-size: 12px;">နာရီ၊ မိနစ် နှင့် စက္ကန့်များကို လိုအပ်သလို အတိအကျ ချိန်ညှိပါ။</small>
-                            </div>
-
-                            <!-- End Time Section -->
-                            <div class="mb-2 bg-white p-3 rounded-3 shadow-sm border">
-                                <label for="endTimeInput" class="form-label fw-bold text-secondary mb-2 d-flex align-items-center gap-1">
-                                    <i class="fa-solid fa-calendar-days text-purple"></i> End Time (ပြီးဆုံးမည့်အချိန်)
-                                </label>
-                                <input type="datetime-local" class="form-control shadow-sm border-0 bg-light py-2" id="endTimeInput" name="endTime">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer border-0 bg-white px-4 py-3">
-                        <button type="button" class="btn btn-secondary btn-sm px-4 fw-bold rounded-pill" data-bs-dismiss="modal">ပိတ်မည်</button>
-                        <button type="button" class="btn btn-sm px-4 fw-bold text-white rounded-pill shadow-sm" style="background-color: #6f42c1;" onclick="saveTimerSettings()">သိမ်းမည်</button>
-                    </div>
-                </div>
+    <!-- Footer -->
+    <footer class="py-8 border-t border-slate-800/80 text-center text-sm text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>&copy; 2026 My Sport MM. All rights reserved.</p>
+            <div class="flex items-center gap-6">
+                <a href="#about" class="hover:text-slate-300 transition-colors">ကိုယ်ရေးအကျဉ်း</a>
+                <a href="#projects" class="hover:text-slate-300 transition-colors">လက်ရာများ</a>
+                <a href="#contact" class="hover:text-slate-300 transition-colors">ဆက်သွယ်ရန်</a>
             </div>
         </div>
+    </footer>
 
-        <!-- 1. Home Tab -->
-        <div id="home-tab" class="tab-content-section active">
-            <div class="row">
-                <!-- 📅 ဒိုင်၏ နေ့စဥ် အနိုင် / အရှုံး စာရင်း Card -->
-                <div class="col-xl-6 mb-4">
-                    <div class="card h-100 shadow-sm border-0" style="background-color: #eff6ff;">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold fs-6 mb-3 text-primary">
-                                <i class="fa-solid fa-calendar-day me-2"></i> 📅 ဒိုင်၏ နေ့စဥ် အနိုင် / အရှုံး စာရင်း
-                            </h5>
-                            <hr class="text-muted opacity-25">
-                            <div class="d-flex justify-content-between py-1 border-bottom"><span>User တွေ နိုင်ငွေပေါင်း:</span> <strong id="daily-win">0 ကျပ်</strong></div>
-                            <div class="d-flex justify-content-between py-1 border-bottom"><span>User တွေ ရှုံးငွေပေါင်း:</span> <strong id="daily-loss">0 ကျပ်</strong></div>
-                            <div class="d-flex justify-content-between py-1 border-bottom"><span>ငွေသွင်း (Deposit):</span> <strong class="text-success" id="daily-deposit">0 ကျပ်</strong></div>
-                            <div class="d-flex justify-content-between py-1 border-bottom"><span>ငွေထုတ် (Withdraw):</span> <strong class="text-warning" id="daily-withdraw">0 ကျပ်</strong></div>
-                            <div class="d-flex justify-content-between py-1 mt-2"><span>ဒိုင်အသားတင် (Net):</span> <strong id="daily-net">0 ကျပ်</strong></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 🗓️ ဒိုင်၏ လစဥ် အနိုင် / အရှုံး စာရင်း Card -->
-                <div class="col-xl-6 mb-4">
-                    <div class="card h-100 shadow-sm border-0" style="background-color: #faf5ff;">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="card-title fw-bold fs-6 m-0 text-purple" style="color: #6f42c1;">
-                                    <i class="fa-solid fa-calendar-days me-2"></i> 🗓️ ဒိုင်၏ လစဥ် အနိုင် / အရှုံး စာရင်း
-                                </h5>
-                                <!-- 🟢 လအလိုက် ရွေးချယ်ရန် Dropdown -->
-                                <div>
-                                    <select id="monthlyDropdown" class="form-select form-select-sm fw-bold text-purple border-purple shadow-sm" style="width: 140px; background-color: #f3e8ff; color: #6f42c1;" onchange="onMonthlyDropdownChange()">
-                                        <!-- JavaScript ဖြင့် လများကို အလိုအလျောက် ထည့်သွင်းပေးပါမည် -->
-                                    </select>
-                                </div>
-                            </div>
-                            <hr class="text-muted opacity-25">
-                            <div class="d-flex justify-content-between py-1 border-bottom"><span>User တွေ နိုင်ငွေပေါင်း:</span> <strong id="monthly-win">0 ကျပ်</strong></div>
-                            <div class="d-flex justify-content-between py-1 border-bottom"><span>User တွေ ရှုံးငွေပေါင်း:</span> <strong id="monthly-loss">0 ကျပ်</strong></div>
-                            <div class="d-flex justify-content-between py-1 border-bottom"><span>ငွေသွင်း (Deposit):</span> <strong class="text-success" id="monthly-deposit">0 ကျပ်</strong></div>
-                            <div class="d-flex justify-content-between py-1 border-bottom"><span>ငွေထုတ် (Withdraw):</span> <strong class="text-warning" id="monthly-withdraw">0 ကျပ်</strong></div>
-                            <div class="d-flex justify-content-between py-1 mt-2"><span>ဒိုင်အသားတင် (Net):</span> <strong id="monthly-net">0 ကျပ်</strong></div>
-                        </div>
-                    </div>
-                </div>
-        </div>
-
-            <!-- Pending Requests Table -->
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">🔔 အတည်ပြုရန် ကျန်ရှိနေသော ငွေသွင်း/ငွေထုတ် တောင်းဆိုမှုများ (Pending Vouchers)</h5>
-                    <span class="badge bg-warning text-dark" id="pending-count">0</span>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped" id="pending-requests-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>User Name</th>
-                                    <th>Type</th>
-                                    <th>Amount</th>
-                                    <th>Payment</th>
-                                    <th>Transaction ID</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pending-requests-tbody">
-                                <!-- Dynamic rows via admin-script.js -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Approve Deposit Modal -->
-                <div class="modal fade" id="approveDepositModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title fw-bold">ငွေသွင်းအတည်ပြုရန်</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <input type="hidden" id="approveRequestId">
-                                <div class="mb-3">
-                                    <label class="form-label text-muted">ငွေဖြည့်ထားသော ပမာဏ (Amount)</label>
-                                    <!-- ပြင်ခွင့်မပေးရန် readonly ထည့်ထားသည် -->
-                                    <input type="text" class="form-control fw-bold text-success" id="approveAmountDisplay" readonly>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="approveTransactionId" class="form-label">Transaction ID ထည့်ရန်</label>
-                                    <input type="text" class="form-control" id="approveTransactionId" placeholder="Transaction ID ရိုက်ထည့်ပါ">
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ပိတ်မည်</button>
-                                <button type="button" class="btn btn-primary btn-sm" onclick="confirmApproveDeposit()">အတည်ပြုမည်</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Custom Modal for Alerts -->
+    <div id="custom-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+        <div class="glass-card max-w-sm w-full mx-4 p-6 rounded-2xl border border-slate-800 text-center">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-check"></i>
             </div>
-
-            <!-- Admin Customer Service Chat Box Section -->
-            <div class="card shadow-sm border-0 mt-4">
-                <div class="card-header bg-purple text-white d-flex justify-content-between align-items-center" style="background-color: #6f42c1;">
-                    <h5 class="mb-0 fs-6 fw-bold">
-                        <i class="fa-solid fa-headset me-2"></i> User များနှင့် တိုက်ရိုက်ပြောဆိုရန် Chat Box
-                    </h5>
-                    <span class="badge bg-light text-dark" id="activeChatUserLabel">User ရွေးချယ်ပါ</span>
-                </div>
-                <div class="card-body p-0">
-                    <div class="row g-0" style="height: 400px;">
-                        <!-- ဘယ်ဘက်ခြမ်း - User များ စာရင်း -->
-                        <div class="col-md-4 border-end overflow-auto bg-light" id="adminChatUserList" style="height: 100%;">
-                            <div class="p-2 border-bottom fw-bold text-muted small">စကားပြောထားသော User များ</div>
-                            <!-- Dynamic User List များကို JavaScript ဖြင့် အောက်ပါ ပုံစံအတိုင်း ထည့်သွင်းပေးပါ -->
-                             <span class="badge bg-danger rounded-pill" id="totalUnreadBadge" style="display: none;">0</span>
-                        </div>
-                        
-                        <!-- ညာဘက်ခြမ်း - Chat Message ပုံစံ -->
-                        <div class="col-md-8 d-flex flex-column" style="height: 100%;">
-                            <!-- မက်ဆေ့ဂျ်များပြမည့် နေရာ -->
-                            <div class="flex-grow-1 p-3 overflow-auto bg-white" id="adminChatBox" style="height: calc(100% - 60px);">
-                                <div class="text-center text-muted mt-5">ကျေးဇူးပြု၍ ဘယ်ဘက်မှ User တစ်ဦးကို ရွေးချယ်ပါ။</div>
-                            </div>
-                            
-                            <!-- စာပို့ရန် Input Area -->
-                            <div class="p-2 border-top bg-light">
-                                <form id="adminChatForm" class="input-group" onsubmit="sendAdminMessage(event)">
-                                    <input type="text" id="adminChatInput" class="form-control" placeholder="စာပြန်ရန် ရေးသားပါ..." required disabled>
-                                    <button class="btn btn-purple text-white" type="submit" id="adminSendBtn" style="background-color: #6f42c1;" disabled>
-                                        <i class="fa-solid fa-paper-plane"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <h3 class="text-lg font-bold text-white mb-2">မက်ဆေ့ခ်ျ ပို့ပြီးပါပြီ</h3>
+            <p class="text-slate-400 text-sm mb-6">သင့်ရဲ့ မက်ဆေ့ခ်ျကို လက်ခံရရှိပါပြီ။ မကြာခင် ပြန်လည်ဆက်သွယ်ပေးပါမည်။</p>
+            <button onclick="closeModal()" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold text-sm">
+                အတည်ပြုမည်
+            </button>
         </div>
+    </div>
 
-        
+    <!-- JavaScript Interactions & Quality Selector Popup Script -->
+    <script>
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
 
-        <!-- 2. Users Tab -->
-        <div id="users-tab" class="tab-content-section">
-            <div class="card shadow-sm border-0 rounded-4 mb-4">
-                <div class="card-body p-4">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-                        <h5 class="card-title fw-bold text-dark m-0">
-                            <i class="fa-solid fa-users-gear text-primary me-2"></i> Registered Users List & Balances
-                        </h5>
-                        <!-- Search Bar -->
-                        <div class="input-group" style="max-width: 300px;">
-                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-search"></i></span>
-                            <input type="text" id="userSearchInput" class="form-control form-control-sm border-start-0 bg-light" placeholder="နာမည် သို့မဟုတ် ဖုန်းဖြင့် ရှာရန်...">
-                        </div>
-                    </div>
-                    
-                    <!-- Users Sub-tabs Navigation -->
-                    <ul class="nav nav-tabs mb-3" id="usersTabNav" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="users-list-subtab" data-bs-toggle="tab" data-bs-target="#users-list-content" type="button">👥 User စာရင်းများ</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="users-payment-subtab" data-bs-toggle="tab" data-bs-target="#users-payment-content" type="button">💳 Payment</button>
-                        </li>
-                    </ul>
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
 
-                    <!-- Sub-tabs Content Area -->
-                    <div class="tab-content p-3 bg-white border border-top-0 rounded-bottom shadow-sm">
-                        <!-- 1st Sub-tab: Users List -->
-                        <div class="tab-pane fade show active" id="users-list-content">
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0" id="usersTable">
-                                    <thead class="table-light text-secondary text-uppercase fs-7">
-                                        <tr>
-                                            <th class="py-3 px-3">အမည် (Name)</th>
-                                            <th class="py-3 px-3">ဖုန်းနံပါတ် (Phone)</th>
-                                            <th class="py-3 px-3">ငွေလက်ခံသည့် ပုံစံ (Payment)</th>
-                                            <th class="py-3 px-3">လက်ကျန်ငွေ (Balance)</th>
-                                            <th class="py-3 px-3 text-center" style="width: 180px;">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="users-table-body">
-                                        @forelse($users as $user)
-                                            <tr>
-                                                <td class="py-3 px-3 fw-bold text-dark">
-                                                    {{ $user->name ?? 'အမည်မရှိ (Admin)' }}
-                                                </td>
-                                                <td class="py-3 px-3 text-muted">{{ $user->phone ?? '-' }}</td>
-                                                <td class="py-3 px-3">
-                                                    <span class="badge bg-primary bg-opacity-10 text-primary px-2.5 py-1 fw-semibold">
-                                                        {{ $user->payment ?? 'KBZPay' }}
-                                                    </span>
-                                                </td>
-                                                
-                                                <td class="py-3 px-3 fw-bold text-success">
-                                                    {{ number_format($user->balance ?? 0) }} ကျပ်
-                                                </td>
-                                                <td class="py-3 px-3 text-center">
-                                                    <div class="d-flex justify-content-center gap-2">
-                                                        <button type="button" class="btn btn-sm btn-primary px-2 py-1" onclick="editUser({{ $user->id }})">
-                                                            <i class="fa-solid fa-pen-to-square me-1"></i> Edit
-                                                        </button>
-                                                        <button type="button" class="btn btn-sm btn-danger px-2 py-1" onclick="deleteUserConfirm({{ $user->id }})">
-                                                            <i class="fa-solid fa-trash me-1"></i> Delete
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="5" class="text-center py-5 text-muted">
-                                                    <i class="fa-solid fa-folder-open fs-3 mb-2 d-block text-secondary opacity-50"></i>
-                                                    မှတ်ပုံတင်ထားသော User များ မရှိသေးပါ။
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- 2nd Sub-tab: Payment -->
-                        <div class="tab-pane fade" id="users-payment-content">
-                            <div class="py-3">
-                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
-                                    <h6 class="fw-bold mb-0 text-dark">
-                                        <i class="fa-solid fa-receipt text-primary me-2"></i> ငွေပေးချေမှု တောင်းဆိုချက်များ (Payment Requests)
-                                    </h6>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <!-- Search Bar -->
-                                        <div class="input-group input-group-sm" style="max-width: 250px;">
-                                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-search"></i></span>
-                                            <input type="text" id="paymentSearchInput" class="form-control form-control-sm border-start-0 bg-light" placeholder="နာမည် သို့မဟုတ် ဖုန်းဖြင့် ရှာရန်...">
-                                        </div>
-                                        <!-- Delete Selected Button -->
-                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedPaymentRequests()">
-                                            <i class="fa-solid fa-trash me-1"></i> ရွေးချယ်ထားသမျှ ဖျက်မည်
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="table-responsive border rounded-3 bg-white shadow-sm">
-                                    <table class="table table-hover align-middle mb-0" id="paymentRequestsTable">
-                                        <thead class="table-light text-secondary text-uppercase fs-7">
-                                            <tr>
-                                                <th class="py-3 px-3" style="width: 40px;">
-                                                    <input type="checkbox" class="form-check-input" id="selectAllPaymentCheckbox" onclick="toggleSelectAllPayments(this)">
-                                                </th>
-                                                <th class="py-3 px-3">ID</th>
-                                                <th class="py-3 px-3">User Name</th>
-                                                <th class="py-3 px-3">Phone</th>
-                                                <th class="py-3 px-3">Type</th>
-                                                <th class="py-3 px-3">Amount</th>
-                                                <th class="py-3 px-3">Payment</th>
-                                                <th class="py-3 px-3">Transaction ID</th>
-                                                <th class="py-3 px-3">Status</th>
-                                                <th class="py-3 px-3">Time</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="payment-requests-table-body">
-                                            <!-- Dynamic Data -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <!-- Pagination Container -->
-                                <div id="paymentPaginationContainer" class="d-flex justify-content-between align-items-center mt-3 pt-2"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- Search Function Script -->
-        <script>
-            document.getElementById('userSearchInput')?.addEventListener('keyup', function() {
-                let filter = this.value.toLowerCase();
-                let rows = document.querySelectorAll('#users-table-body tr');
-                
-                rows.forEach(row => {
-                    let text = row.innerText.toLowerCase();
-                    if(text.includes(filter)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
             });
-        </script>
+        });
 
-        <!-- Edit User Modal -->
-        <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title fw-bold">User အချက်အလက် ပြင်ဆင်ရန်</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="editUserForm">
-                            <input type="hidden" id="editUserId">
-                            <div class="mb-3">
-                                <label for="editUserName" class="form-label">အမည် (Name)</label>
-                                <input type="text" class="form-control" id="editUserName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="editUserPhone" class="form-label">ဖုန်းနံပါတ် (Phone)</label>
-                                <input type="text" class="form-control" id="editUserPhone">
-                            </div>
-                            <div class="mb-3">
-                                <label for="editUserPayment" class="form-label">ငွေပေးချေသည့် ပုံစံ (Payment)</label>
-                                <select class="form-control" id="editUserPayment">
-                                    <option value="KBZPay">KBZPay</option>
-                                    <option value="AYA Pay">AYA Pay</option>
-                                    <option value="Wave Money">Wave Money</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="editUserBalance" class="form-label">လက်ကျန်ငွေ (Balance)</label>
-                                <input type="number" class="form-control" id="editUserBalance">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ပိတ်မည်</button>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="updateUser()">အပြောင်းအလဲ သိမ်းမည်</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const modal = document.getElementById('custom-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            e.target.reset();
+        }
 
-                <!-- 3. 2D User Bets Tab -->
-                <div id="twodbets-tab" class="tab-content-section">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold fs-6 mb-3">🎰 2D User Bets စာရင်းများ</h5>
-                            
-                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
-                                <div class="input-group input-group-sm w-auto">
-                                    <select id="selectSessionName" class="form-select form-select-sm">
-                                        <option value="11:00 AM">11:00 AM Session</option>
-                                        <option value="12:00 PM">12:00 PM Session</option>
-                                        <option value="3:00 PM">3:00 PM Session</option>
-                                        <option value="4:30 PM">4:30 PM Session</option>
-                                    </select>
-                                    <button type="button" class="btn btn-outline-primary px-3" onclick="load2DSessionSettings()">
-                                        <i class="fa-solid fa-clock-rotate-left me-1"></i> စကက်ကျူး သတ်မှတ်ရန်
-                                    </button>
-                                    <button type="button" class="btn btn-success px-3" onclick="openTwoDAnnounceModal()">
-                                        <i class="fa-solid fa-bullhorn me-1"></i> 2D ဂဏန်းကြေငြာရန်
-                                    </button>
-                                </div>
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
 
-                                <!-- 11:00 AM Session Switch -->
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="session_1100" onchange="updateSessionOpenStatus('11:00 AM', this.checked ? 1 : 0)">
-                                    <label class="form-check-label" for="session_1100">11:00 AM ဖွင့်/ပိတ်</label>
-                                </div>
+        function handleCardClick(element) {
+            const rawLinks = element.getAttribute('data-links');
+            const titleText = element.getAttribute('data-title');
+            
+            let links = [];
+            try {
+                links = JSON.parse(rawLinks);
+            } catch (e) {
+                links = [];
+            }
 
-                                <!-- 12:00 PM Session Switch -->
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="session_1200" onchange="updateSessionOpenStatus('12:00 PM', this.checked ? 1 : 0)">
-                                    <label class="form-check-label" for="session_1200">12:00 PM ဖွင့်/ပိတ်</label>
-                                </div>
+            if (!links || links.length === 0) {
+                alert('ပွဲမစသေးပါသဖြစ်ကြည့်၍မရသေးပါ');
+                return;
+            }
 
-                                <!-- 3:00 PM Session Switch -->
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="session_0300" onchange="updateSessionOpenStatus('3:00 PM', this.checked ? 1 : 0)">
-                                    <label class="form-check-label" for="session_0300">3:00 PM ဖွင့်/ပိတ်</label>
-                                </div>
+            const modal = document.getElementById('video-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const qualityContainer = document.getElementById('quality-buttons-container');
 
-                                <!-- 4:30 PM Session Switch -->
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="session_0430" onchange="updateSessionOpenStatus('4:30 PM', this.checked ? 1 : 0)">
-                                    <label class="form-check-label" for="session_0430">4:30 PM ဖွင့်/ပိတ်</label>
-                                </div>
+            modalTitle.innerHTML = `<i class="fa-solid fa-video text-emerald-400"></i> ${titleText}`;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
 
-                                <div class="d-flex align-items-center gap-2">
-                                    <!-- ဂဏန်း သို့မဟုတ် အမည်ဖြင့် ရှာရန် Search Input -->
-                                    <div class="input-group input-group-sm" style="max-width: 250px;">
-                                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-search"></i></span>
-                                        <input type="text" id="twodBetSearchInput" class="form-control form-control-sm border-start-0 bg-light" placeholder="ဂဏန်း သို့မဟုတ် အမည်ဖြင့် ရှာရန်...">
-                                    </div>
-                                    <!-- ရွေးချယ်ထားသမျှ ဖျက်မည် ခလုတ် -->
-                                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedTwoDBets()">
-                                        <i class="fa-solid fa-trash me-1"></i> ရွေးချယ်ထားသမျှ ဖျက်မည်
-                                    </button>
-                                </div>
-                            </div>
+            let qualityLabels = ['1080p', '720p', '480p', '360p', 'HD'];
+            let buttonsHtml = '<span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-2">အရည်အသွေး:</span>';
 
-                            <div class="table-responsive mt-3">
-                                <table class="table table-bordered align-middle" id="2d-bets-table">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th style="width: 40px;" class="text-center">
-                                                <input type="checkbox" class="form-check-input" id="selectAllTwoDBetsCheckbox" onclick="toggleSelectAllTwoDBets(this)">
-                                            </th>
-                                            <th>ID</th>
-                                            <th>Name</th>
-                                            <th>Number</th>
-                                            <th>Amount</th>
-                                            <th>Session</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="twod-bets-table-body">
-                                        <!-- Data will be loaded via admin-script.js -->
-                                    </tbody>
-                                </table>
-                            </div>
-                            <!-- Pagination Container -->
-                            <div id="twodBetPaginationContainer" class="d-flex justify-content-between align-items-center mt-3 pt-2"></div>
-                        </div>
-                    </div>
-                </div>
-                
+            let displayLinks = [...links];
+            if (displayLinks.length === 1) {
+                displayLinks = [links[0], links[0], links[0]]; 
+            }
 
-                <!-- 2D Session Settings Modal -->
-                <div class="modal fade" id="twodSettingsModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title fw-bold">⚙️ Session အလိုက် အချိန် စီမံရန်</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form id="twodSettingsForm">
-                                    <!-- 🛑 ဤ Session အတွက် ထိုး၍ရရန် ဖွင့်မည်/ပိတ်မည် (Switch) ကို UI မှ ဖယ်ရှားလိုက်ပါပြီ -->
-                                    <div class="mb-3">
-                                        <label for="twodOpenTime" class="form-label fw-bold">ဖွင့်မည့်အချိန် (Open Time)</label>
-                                        <input type="datetime-local" class="form-control" id="twodOpenTime">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="twodCloseTime" class="form-label fw-bold">ပိတ်မည့်အချိန် (Close Time)</label>
-                                        <input type="datetime-local" class="form-control" id="twodCloseTime">
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ပိတ်မည်</button>
-                                <button type="button" class="btn btn-primary btn-sm" onclick="save2DSessionSettings()">သိမ်းမည်</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
+            displayLinks.forEach((link, index) => {
+                let label = qualityLabels[index] || `Quality ${index + 1}`;
+                buttonsHtml += `
+                    <button onclick="playQualityLink('${link}', this)" 
+                        class="quality-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-emerald-500 text-slate-300 hover:text-slate-950 text-xs font-bold transition-all border border-slate-700 ${index === 0 ? 'bg-emerald-500 text-slate-950 active-quality' : ''}">
+                        ${label}
+                    </button>
+                `;
+            });
 
+            qualityContainer.innerHTML = buttonsHtml;
+            playQualityLink(displayLinks[0], qualityContainer.querySelector('.quality-btn'));
+        }
 
-                <!-- 2D Announcement & Settle Modal -->
-                <div class="modal fade" id="twodAnnounceModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title fw-bold">🎲 2D ဂဏန်းကြေငြာခြင်းနှင့် အနိုင်စစ်ဆေးရန်</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form id="twodAnnounceForm">
-                                    <div class="mb-3">
-                                        <label for="announceSession" class="form-label fw-bold">Session ရွေးရန်</label>
-                                        <select class="form-select" id="announceSession" name="session" required>
-                                            <option value="11:00 AM">11:00 AM</option>
-                                            <option value="12:00 PM">12:00 PM</option>
-                                            <option value="3:00 PM">3:00 PM</option>
-                                            <option value="4:30 PM">4:30 PM</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="winningNumber" class="form-label fw-bold">ထွက်မည့် 2D ဂဏန်း (Winning Number)</label>
-                                        <input type="text" class="form-control" id="winningNumber" maxlength="2" placeholder="ဥပမာ - 34" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="announceMultiplier" class="form-label fw-bold">အဆပေါင်း (Multiplier)</label>
-                                        <input type="number" class="form-control" id="announceMultiplier" value="80" required>
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ပိတ်မည်</button>
-                                <button type="button" class="btn btn-success btn-sm" onclick="submitTwoDAnnounce()">ကြေငြာမည် & ငွေရှင်းမည်</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
+        let hlsInstance = null;
 
-                <!-- 4. Football Tab -->
-                <div id="football-tab" class="tab-content-section">
-                    <div class="d-flex flex-wrap gap-2 justify-content-between mb-3">
-                        <button class="btn btn-success btn-sm px-3" onclick="openAnnounceMatchModal()"><i class="fa-solid fa-bullhorn me-1"></i> ဘောပွဲကြေငြာရန်</button>
-                        <button class="btn btn-success btn-sm px-3" onclick="openAddLeagueModal()">
-                                <i class="fa-solid fa-bullhorn me-1"></i> +League နှင့် အသင်းများ ထည့်ရန်
-                        </button>
-                    </div>
+        function playQualityLink(url, btnElement) {
+            document.querySelectorAll('.quality-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-500', 'text-slate-950');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+            if (btnElement) {
+                btnElement.classList.remove('bg-slate-800', 'text-slate-300');
+                btnElement.classList.add('bg-emerald-500', 'text-slate-950');
+            }
 
-                    <!-- ဘောပွဲကြေငြာရန် Modal -->
-                    <div class="modal fade" id="announceMatchModal" tabindex="-1" aria-labelledby="announceMatchModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="announceMatchModalLabel">ဘောပွဲ ကြေငြာရန်</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <form id="announceMatchForm">
-                                        <!-- League ရွေးရန် -->
-                                        <div class="mb-3">
-                                            <label for="announceLeague" class="form-label">League</label>
-                                            <select class="form-select" id="announceLeague" required>
-                                                <option value="">League ရွေးချယ်ပါ</option>
-                                            </select>
-                                        </div>
+            const videoElement = document.getElementById('video-player');
 
-                                        <!-- အိမ်ရှင်နှင့် ဧည့်သည်အသင်းများ -->
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label for="announceHomeTeam" class="form-label">အိမ်ရှင်အသင်း</label>
-                                                <select class="form-select" id="announceHomeTeam" required>
-                                                    <option value="">အိမ်ရှင်အသင်း ရွေးပါ</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="announceAwayTeam" class="form-label">ဧည့်သည်အသင်း</label>
-                                                <select class="form-select" id="announceAwayTeam" required>
-                                                    <option value="">ဧည့်သည်အသင်း ရွေးပါ</option>
-                                                </select>
-                                            </div>
-                                        </div>
+            if (url.includes('.m3u8')) {
+                if (Hls.isSupported()) {
+                    if (hlsInstance) {
+                        hlsInstance.destroy();
+                    }
+                    hlsInstance = new Hls();
+                    hlsInstance.loadSource(url);
+                    hlsInstance.attachMedia(videoElement);
+                    hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                        videoElement.play();
+                    });
+                } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+                    videoElement.src = url;
+                    videoElement.addEventListener('loadedmetadata', function() {
+                        videoElement.play();
+                    });
+                }
+            } else {
+                videoElement.src = url;
+                videoElement.play();
+            }
+        }
 
-                                        <!-- အိမ်ရှင်ကြေး / ဧည့်သည်ကြေး -->
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label for="announceHomeOdds" class="form-label">အိမ်ရှင်ကြေး</label>
-                                                <input type="text" class="form-control" id="announceHomeOdds">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="announceAwayOdds" class="form-label">ဧည့်သည်ကြေး</label>
-                                                <input type="text" class="form-control" id="announceAwayOdds">
-                                            </div>
-                                        </div>
+        function closeStreamModal() {
+            const modal = document.getElementById('video-modal');
+            const videoElement = document.getElementById('video-player');
+            
+            videoElement.pause();
+            videoElement.src = '';
+            
+            if (hlsInstance) {
+                hlsInstance.destroy();
+                hlsInstance = null;
+            }
 
-                                        <!-- ဂိုးပေါင်းကြေး / Live Video Play Link -->
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label for="announceGoalTotal" class="form-label">ဂိုးပေါင်းကြေး (မထည့်လဲရ)</label>
-                                                <input type="text" class="form-control" id="announceGoalTotal">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="announceVideoLink" class="form-label">Live Video Play Link များ (မထည့်လဲရ၊ တစ်ကြောင်းလျှင် တစ်ခု (သို့) ကော်မာခံရန်)</label>
-                                                <textarea class="form-control" id="announceVideoLink" rows="2" placeholder="လင့်ခ်များကို အများကြီးထည့်ရန်..."></textarea>
-                                            </div>
-                                        </div>
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
 
-                                        <!-- ဘောဒီအိမ်ရှင်ကြေး / ဘောဒီဧည့်သည်ကြေး -->
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label for="announceBodyOdds" class="form-label">ဘောဒီအိမ်ရှင်ကြေး</label>
-                                                <input type="text" class="form-control" id="announceBodyOdds">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="announceBodyAwayOdds" class="form-label">ဘောဒီဧည့်သည်ကြေး</label>
-                                                <input type="text" class="form-control" id="announceBodyAwayOdds">
-                                            </div>
-                                        </div>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slider-item');
+        
+        // Auto Slider Script
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('opacity-100', 'z-10');
+                slide.classList.add('opacity-0', 'z-0');
+                if (i === index) {
+                    slide.classList.remove('opacity-0', 'z-0');
+                    slide.classList.add('opacity-100', 'z-10');
+                }
+            });
+        }
 
-                                        <!-- ဘောဒီဂိုးပေါင်းကြေး -->
-                                        <div class="mb-3">
-                                            <label for="announceBodyGoalTotal" class="form-label">ဘောဒီဂိုးပေါင်းကြေး (မထည့်လဲရ)</label>
-                                            <input type="text" class="form-control" id="announceBodyGoalTotal">
-                                        </div>
+        function nextSlide() {
+            if (slides.length === 0) return;
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        }
 
-                                        <!-- Close Time -->
-                                        <div class="mb-3">
-                                            <label for="announceCloseTime" class="form-label">ပိတ်မည့်အချိန် (Close Time/Date)</label>
-                                            <input type="datetime-local" class="form-control" id="announceCloseTime" required>
-                                        </div>
-                                    </form>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="button" class="btn btn-primary" id="submitAnnounceMatchBtn" onclick="submitAnnounceMatch()">ကြေငြာမည်</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        function prevSlide() {
+            if (slides.length === 0) return;
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            showSlide(currentSlide);
+        }
 
-                    <!-- Bootstrap Modal -->
-                    <div class="modal fade" id="addLeagueModal" tabindex="-1" aria-labelledby="addLeagueModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="addLeagueModalLabel">League နှင့် အသင်းများ ထည့်သွင်းရန်</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-            <form id="addLeagueForm">
-                    <!-- Dropdown (League များကို ရွေးချယ်ရန်) -->
-                        <div class="mb-3">
-                            <label for="league_name" class="form-label">League အမည် (League Name)</label>
-                            <select class="form-control" id="league_name" name="league_name" required onchange="checkNewLeague(this)">                                
-                                <option value="">-- League တစ်ခု ရွေးပါ (သို့) အသစ်ထည့်ရန် --</option>
-                                <option value="NEW_LEAGUE">➕ League အသစ်ထည့်မည်</option>
-                            </select>
-                        </div>
-
-                        <!-- League အသစ်ထည့်ရန် Text Input (မူလက ပိတ်ထားမည်) -->
-                        <div class="mb-3 d-none" id="newLeagueContainer">
-                            <label for="new_league_name" class="form-label">League အမည်အသစ် ရိုက်ထည့်ရန်</label>
-                            <input type="text" class="form-control" id="new_league_name" placeholder="ဥပမာ - Premier League">
-                        </div>
-
-                        <!-- အသင်းများ ထည့်ရန် -->
-                        <div class="mb-3">
-                            <label for="teams" class="form-label">ဘောလုံးအသင်းများ (Teams - ကော်မာ , ဖြင့်ခံရန်)</label>
-                            <textarea class="form-control" id="teams" name="teams" rows="3" required placeholder="Manchester United, Arsenal, Chelsea"></textarea>
-                        </div>
-                    
-                    <div class="alert alert-danger d-none" id="leagueErrorMsg"></div>
-                    <div class="alert alert-success d-none" id="leagueSuccessMsg"></div>
-            </form>
-        </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ပိတ်မည်</button>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="submitLeagueData()">သိမ်းဆည်းမည်</button>
-                    </div>
-                    </div>
-                </div>
-            </div>
-
-            <ul class="nav nav-tabs" id="footballTabNav" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="matches-subtab" data-bs-toggle="tab" data-bs-target="#matches-content" type="button">⚽ ကြေငြာထားသော ပွဲစဉ်များ</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="bets-subtab" data-bs-toggle="tab" data-bs-target="#bets-content" type="button">💰 ထိုးထားသော Bet များ</button>
-                </li>
-            </ul>
-
-            <div class="tab-content p-3 bg-white border border-top-0 rounded-bottom shadow-sm">
-                <div class="tab-pane fade show active" id="matches-content">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" id="announced-matches-table">
-                            <div class="mb-3">
-                    <input type="text" id="matchSearchInput" class="form-control w-25" placeholder="အသင်းအမည်ဖြင့် ရှာရန်..." onkeyup="filterMatches()">
-                    </div>
-                            <thead class="table-light text-secondary">
-                                <tr>
-                                    <th style="background-color: #e3f2fd; color: #0d6efd;">ID</th>
-                                    <th style="background-color: #e3f2fd; color: #fd0d0d;">ပိတ်ချိန်</th>
-                                    <th style="background-color: #e3f2fd; color: #09fd09;">အိမ်ရှင် vs ဧည့်သည်</th>
-                                    <th style="background-color: #e3f2fd; color: #fd0d55;">မောင်းဂိုးပေါင်း</th>
-                                    <th style="background-color: #e3f2fd; color: #250dfd;">Bအိမ်ရှင် vs Bဧည့်သည်</th>
-                                    <th style="background-color: #e3f2fd; color: #fd0d0d;">ဘော်ဒီဂိုးပေါင်း</th>
-                                    <th style="background-color: #e3f2fd; color: #e10dfd;">ဘောဒီ Status</th>
-                                    <th style="background-color: #e3f2fd; color: #e10dfd;">မောင်း Status</th>
-                                    <th style="background-color: #e3f2fd; color: #fd0d0d;">Action</th>
-                                </tr>
-                            </thead>
-                                <tbody>
-                                <!-- Dynamic Data -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ဘောပွဲပြင်ဆင်ရန် Modal -->
-                <div class="modal fade" id="editMatchModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">ဘောပွဲ အချက်အလက် ပြင်ဆင်ရန်</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form id="editMatchForm">
-                                    <input type="hidden" id="editMatchId">
-                                    
-                                    <div class="mb-3">
-                                        <label class="form-label">League</label>
-                                        <input type="text" class="form-control" id="editLeagueName" readonly>
-                                    </div>
-
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">အိမ်ရှင်အသင်း</label>
-                                            <input type="text" class="form-control" id="editHomeTeam" readonly>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">ဧည့်သည်အသင်း</label>
-                                            <input type="text" class="form-control" id="editAwayTeam" readonly>
-                                        </div>
-                                    </div>
-
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">အိမ်ရှင်ကြေး</label>
-                                            <input type="text" class="form-control" id="editHomeOdds">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">ဧည့်သည်ကြေး</label>
-                                            <input type="text" class="form-control" id="editAwayOdds">
-                                        </div>
-                                    </div>
-
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">ဂိုးပေါင်းကြေး</label>
-                                            <input type="text" class="form-control" id="editGoalTotal">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Live Video Play Link များ</label>
-                                            <textarea class="form-control" id="editVideoLink" rows="2"></textarea>
-                                        </div>
-                                    </div>
-
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">ဘောဒီအိမ်ရှင်ကြေး</label>
-                                            <input type="text" class="form-control" id="editBodyOdds">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">ဘောဒီဧည့်သည်ကြေး</label>
-                                            <input type="text" class="form-control" id="editBodyAwayOdds">
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">ဘောဒီဂိုးပေါင်းကြေး</label>
-                                        <input type="text" class="form-control" id="editBodyGoalTotal">
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">ပိတ်မည့်အချိန် (Close Time)</label>
-                                        <input type="datetime-local" class="form-control" id="editCloseTime">
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ပိတ်မည်</button>
-                                <button type="button" class="btn btn-primary" onclick="submitEditMatch()">ပြင်ဆင်မည်</button>
-                            </div>
-                        </div>
-
-                        
-                    </div>
-                </div>
-                <div class="tab-pane fade" id="bets-content">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
-        <div class="input-group" style="max-width: 350px;">
-            <span class="input-group-text"><i class="fas fa-search"></i></span>
-            <input type="text" id="betSearchQuery" class="form-control" placeholder="Bet ID (သို့) အသင်းနာမည်ဖြင့် ရှာရန်...">
-        </div>
-        <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedFootballBets()">
-            <i class="fa-solid fa-trash me-1"></i> ရွေးချယ်ထားသမျှ ဖျက်မည်
-        </button>
-    </div>
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th style="width: 40px;" class="text-center">
-                        <input type="checkbox" class="form-check-input" id="selectAllFootballBetsCheckbox" onclick="toggleSelectAllFootballBets(this)">
-                    </th>
-                    <th>ID</th>
-                    <th>User Name</th>
-                    <th>Bet Type</th>
-                    <th>ရွေးချယ်မှု (Selected Options)</th>
-                    <th>စုစုပေါင်းပမာဏ</th>
-                    <th>Status</th>
-                    <th>အချိန်</th>
-                    <th>အရေးယူဆောင်ရွက်ရန်</th>
-                </tr>
-            </thead>
-            <tbody id="footballBetsTableBody">
-                <!-- JavaScript ဖြင့် Data များကို ဤနေရာတွင် ထည့်သွင်းမည် -->
-            </tbody>
-        </table>
-    </div>
-</div>
-        </div>
-    </div>
-</div>
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom Admin JS -->
-    <script src="{{ asset('js/admin-script.js') }}"></script>
+        if (slides.length > 1) {
+            setInterval(nextSlide, 5000);
+        }
+    </script>
 </body>
 </html>

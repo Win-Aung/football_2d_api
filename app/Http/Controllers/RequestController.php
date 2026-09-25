@@ -139,4 +139,27 @@ class RequestController extends Controller
         ]);
     }
 
+    public function deleteRequest(Request $request)
+    {
+        // request_id သို့မဟုတ် id ကို လက်ခံရယူမည်
+        $requestId = $request->request_id ?? $request->id;
+
+        $userRequest = UserRequest::find($requestId);
+
+        if (!$userRequest) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'ငွေပေးချေမှု တောင်းဆိုမှုကို ရှာမတွေ့ပါ။'
+            ], 404);
+        }
+
+        // တောင်းဆိုမှုကို ဖျက်ခြင်း
+        $userRequest->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'ငွေပေးချေမှု တောင်းဆိုချက်ကို အောင်မြင်စွာ ဖျက်ပြီးပါပြီ။'
+        ]);
+    }
+
 }

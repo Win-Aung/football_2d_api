@@ -27,22 +27,23 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+
 // ၃. Login Form မှ POST ဖြင့် တင်လိုက်လျှင် စစ်ဆေးရန်
-Route::post('/login', function (Request $request) {
+Route::post('/admin/login', function (Request $request) {
     $username = $request->input('username');
     $password = $request->input('password');
 
-    // Admin စစ်ဆေးခြင်း
-    if ($username === 'admin' && $password === 'admin123') {
-        $adminUser = User::where('email', 'admin123@gmail.com')->first();
-
-        if (!$adminUser) {
-            $adminUser = User::create([
+    // .env ထဲက အချက်အလက်များနှင့် တိုက်စစ်ခြင်း
+    if (($username === env('ADMIN_USER') || $username === env('ADMIN_EMAIL')) && $password === env('ADMIN_PASS')) {
+        
+        $adminUser = User::firstOrCreate(
+            ['email' => env('ADMIN_EMAIL')],
+            [
                 'name' => 'Admin',
-                'email' => 'admin123@gmail.com',
-                'password' => bcrypt('admin123'), // Hash ဖြင့်သိမ်းရန် (သို့) Plain text
-            ]);
-        }
+                'password' => bcrypt(env('ADMIN_PASS')),
+                'phone' => '09' . rand(10000000, 99999999),
+            ]
+        );
 
         $token = $adminUser->createToken('admin_token')->plainTextToken;
 
@@ -51,21 +52,48 @@ Route::post('/login', function (Request $request) {
             'auth_token' => $token
         ]);
 
-        return redirect()->route('welcome');
+        return redirect()->route('admin.dashboard');
     }
 
     return back()->with('error', 'Username သို့မဟုတ် Password မှားယွင်းနေပါသည်။');
 })->name('login.post');
 
-// ၄. Login ဝင်ပြီးမှသာ ကြည့်လို့ရမည့် Welcome / Dashboard Page
+
+
+
 Route::get('/welcome', function () {
-    if (!session('is_logged_in')) {
-        return redirect()->route('login');
-    }
-    
     $users = User::all();
-    return view('welcome', compact('users')); 
+    return view('welcome', compact('users'));
 })->name('welcome');
+
+Route::get('/', function () {
+    return redirect()->route('welcome');
+});
+
+Route::get('/admin/login', function () {
+    if (session('is_logged_in')) {
+        return redirect()->route('welcome');
+    }
+    return view('auth.login');
+})->name('admin.login'); // Route name ကို admin.login သို့ ပြောင်းပါ
+
+// မူလ Home ( / ) သို့မဟုတ် /login ဝင်လာပါက /admin/login သို့ ပို့ပေးရန်
+Route::get('/login', function () {
+    return redirect()->route('admin.login');
+});
+Route::get('/admin', function () {
+    return redirect()->route('admin.login');
+});
+
+// Admin Dashboard (Login ဝင်ထားမှသာ ကြည့်လို့ရမည်၊ ကျော်ဝင်၍ မရပါ)
+Route::get('/admin/dashboard', function () {
+    if (!session('is_logged_in')) {
+        return redirect()->route('admin.login');
+    }
+
+    $users = User::all();
+    return view('admin.dashboard', compact('users'));
+})->name('admin.dashboard');
 
 Route::get('/game-home', function () {
     return view('game_home'); 
@@ -90,4 +118,9 @@ Route::get('/config/session-status', [ConfigController::class, 'getSessionStatus
 Route::match(['get', 'post'], '/logout', function (Request $request) {
     $request->session()->flush();
     return redirect()->route('login');
+})->name('logout');
+
+Route::match(['get', 'post'], '/logout', function (Request $request) {
+    $request->session()->flush();
+    return redirect()->route('admin.login');
 })->name('logout');
